@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لعبة بطلة الدرس 🎮✨</title>
+    <title>لعبة التعليم التفاعلية 🎮✨</title>
     <style>
         body {
             font-family: 'Cairo', Tahoma, sans-serif;
-            background: linear-gradient(135deg, #ff9ff3, #feca57);
+            background: linear-gradient(135deg, #74b9ff, #a29bfe);
             color: #2d3436;
             text-align: center;
             padding: 15px;
@@ -21,9 +21,9 @@
             border-radius: 25px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.25);
         }
-        h1 { color: #ff6b6b; font-size: 24px; margin-bottom: 5px; }
+        h1 { color: #0984e3; font-size: 24px; margin-bottom: 5px; }
         .score-box {
-            background: #54a0ff;
+            background: #00b894;
             color: white;
             padding: 8px 15px;
             border-radius: 20px;
@@ -32,16 +32,17 @@
             margin-bottom: 15px;
         }
         .question-box {
-            background: #f1f2f6;
+            background: #dfe6e9;
             padding: 18px;
             border-radius: 15px;
             font-size: 18px;
             font-weight: bold;
             margin-bottom: 20px;
-            color: #2c3e50;
+            color: #2d3436;
+            text-align: right;
         }
         .option-btn {
-            background: #00d2d3;
+            background: #0984e3;
             color: white;
             border: none;
             padding: 14px;
@@ -51,15 +52,16 @@
             width: 100%;
             margin-bottom: 10px;
             font-weight: bold;
+            text-align: right;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             transition: 0.2s;
         }
         .option-btn:active { transform: scale(0.97); }
-        .option-btn.correct { background: #2ed573 !important; }
-        .option-btn.wrong { background: #ff4757 !important; }
+        .option-btn.correct { background: #00b894 !important; }
+        .option-btn.wrong { background: #d63031 !important; }
         .result-screen { display: none; }
         .restart-btn {
-            background: #ff6b6b;
+            background: #e17055;
             color: white;
             border: none;
             padding: 15px 30px;
@@ -74,55 +76,47 @@
 <body>
 
     <div class="container">
-        <h1>🎮 تحدي درس "من أنا؟" 🌟</h1>
+        <h1>🎮 التحدي التعليمي الذكي 🌟</h1>
         <div class="score-box" id="scoreDisplay">النقاط: 0 ⭐</div>
 
         <!-- شاشة اللعبة -->
         <div id="gameScreen">
-            <div class="question-box" id="questionText">جاري تحميل السؤال...</div>
+            <div class="question-box" id="questionText">ارفع صور الدرس أو اسألني لأجهز لك اللعبة!</div>
             <div id="optionsContainer"></div>
         </div>
 
-        <!-- شاشة النهاية (الفوز) -->
+        <!-- شاشة النهاية -->
         <div class="result-screen" id="resultScreen">
-            <h2>🏆 بطلة عظيمة! 🏆</h2>
+            <h2>🏆 بطل ممتاز! 🏆</h2>
             <p id="finalMessage" style="font-size: 18px; font-weight: bold;"></p>
             <button class="restart-btn" onclick="restartGame()">العب تاني 🔄</button>
         </div>
     </div>
 
     <script>
-        // الأسئلة مبنية بالظبط من صفحات الدرس والتدريبات اللي صورتها (آبلة فضيلة ومعاني الكلمات)
+        // الأسئلة قابلة للتعديل بحسب الدرس أو الصور التي ترفعها في أي وقت
         const questions = [
             {
-                q: "في درس (من أنا؟)، من هي الشخصية الإذاعية الشهيرة التي تحكي الحكايات للأطفال؟",
-                options: ["آبلة فضيلة", "أبلة ميرفت", "عزة ودور"],
-                correct: 0,
-                sound: "مين الشخصية الإذاعية الشهيرة في الدرس؟ هل هي آبلة فضيلة؟"
-            },
-            {
-                q: "ما معنى كلمة (شهير) في جملة: (دكتور أحمد زويل شهير بأبحاثه)؟",
-                options: ["فقير", "معروف", "صغير"],
+                q: "السؤال الأول: ما هي عاصمة جمهورية مصر العربية؟",
+                options: [
+                    "الاجابة الأولى: الإسكندرية", 
+                    "الاجابة الثانية: القاهرة", 
+                    "الاجابة الثالثة: أسوان", 
+                    "الاجابة الرابعة: الأقصر"
+                ],
                 correct: 1,
-                sound: "ما معنى كلمة شهير؟"
+                sound: "السؤال الأول: ما هي عاصمة جمهورية مصر العربية؟ الاختيارات: الإجابة الأولى: الإسكندرية. الإجابة الثانية: القاهرة. الإجابة الثالثة: أسوان. الإجابة الرابعة: الأقصر."
             },
             {
-                q: "ما هو حلم (آبلة فضيلة) الحقيقي بعد أن التحقت بكلية الحقوق؟",
-                options: ["أن تكون طبيبة", "أن تكون مهندسة", "أن تكون مذيعة في الإذاعة المصرية"],
+                q: "السؤال الثاني: أي من المواد الدراסيّة التالية تهتم بدراسة الخرائط والبلدان؟",
+                options: [
+                    "الاجابة الأولى: العلوم", 
+                    "الاجابة الثانية: الرياضيات", 
+                    "الاجابة الثالثة: الدراسات الاجتماعية", 
+                    "الاجابة الرابعة: اللغة العربية"
+                ],
                 correct: 2,
-                sound: "إيه كان حلم آبلة فضيلة الحقيقي؟"
-            },
-            {
-                q: "ما معنى كلمة (أواجه) في جملة: (أواجه المشكلات بإرادة قوية)؟",
-                options: ["أقابل", "أهرب من", "أترك"],
-                correct: 0,
-                sound: "ما معنى كلمة أواجه؟"
-            },
-            {
-                q: "من خلال التدريبات، ما هي كلمة مرادفها (الإشارات)؟",
-                options: ["القصص", "التلميحات", "الحكايات"],
-                correct: 1,
-                sound: "ما هي الكلمة التي مرادفها الإشارات؟"
+                sound: "السؤال الثاني: أي من المواد الدراسية التالية تهتم بدراسة الخرائط والبلدان؟ الاختيارات: الإجابة الأولى: العلوم. الإجابة الثانية: الرياضيات. الإجابة الثالثة: الدراسات الاجتماعية. الإجابة الرابعة: اللغة العربية."
             }
         ];
 
@@ -133,7 +127,7 @@
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'ar-SA';
-            utterance.rate = 0.95;
+            utterance.rate = 0.90; // سرعة هادئة وواضحة للطفل
             window.speechSynthesis.speak(utterance);
         }
 
@@ -144,7 +138,7 @@
             }
 
             const qData = questions[currentQuestion];
-            document.getElementById('questionText').innerText = `السؤال (${currentQuestion + 1} من ${questions.length}):\n` + qData.q;
+            document.getElementById('questionText').innerText = qData.q;
             
             const optionsContainer = document.getElementById('optionsContainer');
             optionsContainer.innerHTML = '';
@@ -157,6 +151,7 @@
                 optionsContainer.appendChild(btn);
             });
 
+            // قراءة السؤال كاملًا ثم الخيارات بالترتيب من واحد لأربعة
             speak(qData.sound);
         }
 
@@ -164,29 +159,28 @@
             const qData = questions[currentQuestion];
             const allButtons = document.querySelectorAll('.option-btn');
             
-            // قفل الأزرار عشان ميتدش كذا مرة
             allButtons.forEach(b => b.disabled = true);
 
             if (selectedIdx === qData.correct) {
                 btnElement.classList.add('correct');
                 score += 10;
                 document.getElementById('scoreDisplay').innerText = `النقاط: ${score} ⭐`;
-                speak("برافو عليكِ يا بطلة، إجابة صحيحة وممتازة!");
+                speak("برافو! إجابة صحيحة وممتازة.");
             } else {
                 btnElement.classList.add('wrong');
                 allButtons[qData.correct].classList.add('correct');
-                speak("معليش يا شطورة، الإجابة الصحيحة هي دي.");
+                speak("معليش، الإجابة الصحيحة هي: " + qData.options[qData.correct]);
             }
 
             currentQuestion++;
-            setTimeout(loadQuestion, 2000); // الانتقال للسؤال التالي بعد ثانيتين
+            setTimeout(loadQuestion, 3000);
         }
 
         function showResult() {
             document.getElementById('gameScreen').style.display = 'none';
             document.getElementById('resultScreen').style.display = 'block';
-            document.getElementById('finalMessage').innerText = `خلصتِ اللعبة يا بطلة! وجبتِ ${score} نقطة من 50. شطورة خالص! 🎉`;
-            speak(`خلصتِ اللعبة يا بطلة! جبتِ ${score} نقطة. برافو عليكِ!`);
+            document.getElementById('finalMessage').innerText = `أنهيت التحدي بنجاح! مجموع نقاطك: ${score} نقطة. ممتاز جداً! 🎉`;
+            speak(`أنهيت التحدي بنجاح! مجموع نقاطك هو ${score} نقطة. برافو عليك!`);
         }
 
         function restartGame() {
@@ -198,7 +192,6 @@
             loadQuestion();
         }
 
-        // بدء اللعبة أول ما الصفحة تفتح
         window.onload = () => {
             setTimeout(loadQuestion, 1000);
         };
