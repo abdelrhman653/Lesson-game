@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مدرسة الألعاب الذكية 🎮</title>
+    <style>
+        body {
+            font-family: 'Cairo', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #74b9ff, #a29bfe);
+            color: #2d3436;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        h1 { color: #0984e3; font-size: 24px; }
+        .btn {
+            background: #00b894;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,184,148,0.4);
+            margin: 15px 0;
+            width: 100%;
+            font-weight: bold;
+        }
+        .btn:active { transform: scale(0.98); }
+        #cameraInput { display: none; }
+        #preview {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: none;
+        }
+        .output-box {
+            background: #dfe6e9;
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 20px;
+            text-align: right;
+            font-size: 16px;
+            line-height: 1.6;
+            min-height: 80px;
+        }
+        .loading { color: #e17055; font-weight: bold; display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🌟 معلمتي الذكية 🌟</h1>
+        <p>صوري الدرس يا بطلة، وتعالي نلعب ونتعلم سوا!</p>
+
+        <!-- زرار فتح كاميرا الموبايل مباشرة -->
+        <label for="cameraInput" class="btn">📸 صوري الدرس الآن</label>
+        <input type="file" id="cameraInput" accept="image/*" capture="environment">
+
+        <!-- عرض الصورة اللي صوروها -->
+        <img id="preview" alt="صورة الدرس">
+
+        <div class="loading" id="loadingText">⏳ ثواني يا بطلة، جاري قراءة الدرس وتحويله للعبة...</div>
+
+        <!-- مكان ظهور الشرح واللعبة -->
+        <div class="output-box" id="outputResult">
+            هنا هيظهر الشرح الملخص والأسئلة بصوت جميل! 🎮✨
+        </div>
+
+        <button class="btn" id="speakBtn" style="background: #0984e3; display: none;" onclick="speakResult()">🔊 اسمعي الشرح</button>
+    </div>
+
+    <script>
+        const apiKey = "حط_مفتاح_الـ_API_هنا"; // حط مفتاح الجيميني API هنا
+        let currentTextToSpeech = "";
+
+        document.getElementById('cameraInput').addEventListener('change', async function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // عرض الصورة المصغرة ع الشاشة
+            const preview = document.getElementById('preview');
+            preview.src = URL.createObjectURL(file);
+            preview.style.display = 'block';
+
+            document.getElementById('loadingText').style.display = 'block';
+            document.getElementById('outputResult').innerText = "جاري التفكير...";
+            document.getElementById('speakBtn').style.display = 'none';
+
+            // تحويل الصورة لـ Base64 عشان نبعتها للذكاء الاصطناعي
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = async function() {
+                const base64Data = reader.result.split(',')[1];
+                await analyzeImageWithGemini(base64Data);
+            };
+        });
+
+        async function analyzeImageWithGemini(base64Image) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            
+            const promptText = "أنت معلمة كرتونية ومرحة جداً للأطفال. انظر لصورة الدرس هذه، ولخصها في شكل قصة قصيرة أو نقاط ممتعة، وبعدين اعمل لها لعبة 'سؤال وشرط' سريعة عشان تفهمها الطفلة. اتكلم باللهجة المصرية البسيطة والودودة، وبدون إيموجي كثيرة تلخبط النطق الصوتي.";
+
+            const requestBody = {
+                contents: [{
+                    parts: [
+                        { text: promptText },
+                        {
+                            inline_data: {
+                                mime_type: "image/jpeg",
+                                data: base64Image
+                            }
+                        }
+                    ]
+                }]
+            };
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const data = await response.json();
+                const textResult = data.candidates[0].content.parts[0].text;
+
+                document.getElementById('loadingText').style.display = 'none';
+                document.getElementById('outputResult').innerText = textResult;
+                currentTextToSpeech = textResult;
+                document.getElementById('speakBtn').style.display = 'block';
+
+                // تشغيل الصوت تلقائي أول ما يخلص
+                speakResult();
+
+            } catch (error) {
+                document.getElementById('loadingText').style.display = 'none';
+                document.getElementById('outputResult').innerText = "حصل مشكلة بسيطة في الاتصال، جربي تاني يا بطلة!";
+                console.error(error);
+            }
+        }
+
+        // دالة نطق الكلام بالصوت الطبيعي للموبايل (بدون برامج خارجية)
+        function speakResult() {
+            if (!currentTextToSpeech) return;
+            window.speechSynthesis.cancel(); // إيقاف أي صوت قديم
+            const utterance = new SpeechSynthesisUtterance(currentTextToSpeech);
+            utterance.lang = 'ar-SA'; // لغة عربية
+            utterance.rate = 0.9; // سرعة مناسبة للأطفال (هادئة)
+            window.speechSynthesis.speak(utterance);
+        }
+    </script>
+
+</body>
+</html>
