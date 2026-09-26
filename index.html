@@ -3,199 +3,615 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لعبة التعليم التفاعلية 🎮✨</title>
+    <title>مغامرات التعلم الذكية للأطفال 🎮✨</title>
     <style>
-        body {
-            font-family: 'Cairo', Tahoma, sans-serif;
-            background: linear-gradient(135deg, #74b9ff, #a29bfe);
-            color: #2d3436;
-            text-align: center;
-            padding: 15px;
+        :root {
+            --primary: #ff6b6b;
+            --secondary: #48dbfb;
+            --accent: #feca57;
+            --background: #f7f1e3;
+            --text: #2c2c54;
+            --white: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
             margin: 0;
+            padding: 0;
+            font-family: 'Cairo', Tahoma, sans-serif;
         }
-        .container {
-            max-width: 500px;
-            margin: auto;
-            background: white;
-            padding: 25px;
-            border-radius: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+
+        body {
+            background: linear-gradient(135deg, #74b9ff, #a29bfe);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
         }
-        h1 { color: #0984e3; font-size: 24px; margin-bottom: 5px; }
-        .score-box {
-            background: #00b894;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            display: inline-block;
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--white);
+            border-radius: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            margin-top: 10px;
+        }
+
+        header {
+            background: linear-gradient(90deg, #ff9ff3, #feca57);
+            padding: 15px;
+            text-align: center;
             font-weight: bold;
-            margin-bottom: 15px;
-        }
-        .question-box {
-            background: #dfe6e9;
-            padding: 18px;
-            border-radius: 15px;
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 20px;
+            font-size: 20px;
             color: #2d3436;
-            text-align: right;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .option-btn {
+
+        header button {
+            background: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .screen {
+            padding: 20px;
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* شاشة الإعدادات / مفتاح الـ API */
+        .settings-box {
+            background: #dfe6e9;
+            padding: 15px;
+            border-radius: 20px;
+            text-align: right;
+            font-size: 14px;
+        }
+
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #b2bec3;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        /* زر رفع الصورة الأساسي */
+        .upload-section {
+            border: 3px dashed #0984e3;
+            border-radius: 25px;
+            padding: 25px;
+            background: #f1f2f6;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .upload-section:hover {
+            background: #dfe6e9;
+        }
+
+        .upload-btn-large {
             background: #0984e3;
             color: white;
             border: none;
-            padding: 14px;
-            font-size: 16px;
-            border-radius: 15px;
-            cursor: pointer;
-            width: 100%;
-            margin-bottom: 10px;
-            font-weight: bold;
-            text-align: right;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            transition: 0.2s;
-        }
-        .option-btn:active { transform: scale(0.97); }
-        .option-btn.correct { background: #00b894 !important; }
-        .option-btn.wrong { background: #d63031 !important; }
-        .result-screen { display: none; }
-        .restart-btn {
-            background: #e17055;
-            color: white;
-            border: none;
-            padding: 15px 30px;
+            padding: 15px 25px;
             font-size: 18px;
             border-radius: 50px;
             cursor: pointer;
             font-weight: bold;
-            margin-top: 15px;
+            box-shadow: 0 5px 15px rgba(9, 132, 227, 0.4);
+            width: 100%;
+            margin-top: 10px;
         }
+
+        /* شاشة التحميل */
+        .loader-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 0;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 6px solid #dfe6e9;
+            border-top: 6px solid #ff7675;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* منطقة اللعبة الديناميكية */
+        .game-canvas-container {
+            width: 100%;
+            height: 320px;
+            background: #2d3436;
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .hud {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 16px;
+            background: #f1f2f6;
+            padding: 10px 15px;
+            border-radius: 12px;
+        }
+
+        .action-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .ctrl-btn {
+            background: #00b894;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            flex: 1;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        .ctrl-btn:active { transform: scale(0.95); }
+
+        /* زر الصوت التفاعلي */
+        .sound-replay-btn {
+            background: #fdcb6e;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+            font-size: 14px;
+        }
+
+        /* ملخص الدرس البصري */
+        .summary-card {
+            background: #fff3cd;
+            border: 2px solid #ffeeba;
+            padding: 15px;
+            border-radius: 15px;
+            text-align: right;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .primary-btn {
+            background: #00b894;
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 5px 15px rgba(0,184,148,0.3);
+        }
+
+        hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>🎮 التحدي التعليمي الذكي 🌟</h1>
-        <div class="score-box" id="scoreDisplay">النقاط: 0 ⭐</div>
+    <div class="app-container">
+        <!-- الهيدر -->
+        <header>
+            <span>🎮 مغامرة الأبطال</span>
+            <div>
+                <button onclick="toggleParentMode()">👨‍👩‍👧 ولي الأمر</button>
+                <button onclick="openSettings()">⚙️</button>
+            </div>
+        </header>
 
-        <!-- شاشة اللعبة -->
-        <div id="gameScreen">
-            <div class="question-box" id="questionText">ارفع صور الدرس أو اسألني لأجهز لك اللعبة!</div>
-            <div id="optionsContainer"></div>
+        <!-- 1. شاشة الإعدادات وإدخال مفتاح الذكاء الاصطناعي -->
+        <div id="settingsScreen" class="screen">
+            <h2>🔑 إعدادات الذكاء الاصطناعي</h2>
+            <div class="settings-box">
+                <p>أدخل مفتاح Gemini API المجاني الخاص بك لتفعيل فهم الصور وتحويلها لألعاب:</p>
+                <input type="password" id="apiKeyInput" placeholder="AIzaSy...">
+                <button class="primary-btn" onclick="saveApiKey()">حفظ المفتاح 💾</button>
+                <button style="background:#e17055; margin-top:8px;" class="primary-btn" onclick="removeApiKey()">حذف المفتاح 🗑️</button>
+            </div>
+            <button class="primary-btn" style="background:#0984e3;" onclick="goHome()">العودة للرئيسية ◀</button>
         </div>
 
-        <!-- شاشة النهاية -->
-        <div class="result-screen" id="resultScreen">
-            <h2>🏆 بطل ممتاز! 🏆</h2>
-            <p id="finalMessage" style="font-size: 18px; font-weight: bold;"></p>
-            <button class="restart-btn" onclick="restartGame()">العب تاني 🔄</button>
+        <!-- 2. الشاشة الرئيسية (رفع الصورة) -->
+        <div id="homeScreen" class="screen active">
+            <h2>أهلاً يا بطل! 🌟</h2>
+            <p style="font-size: 14px; color: #636e72;">صوّر أي درس مدرسة، وسأحوله لك فوراً إلى لعبة مغامرة ممتعة!</p>
+            
+            <div class="upload-section" onclick="document.getElementById('fileInput').click()">
+                <div style="font-size: 40px; margin-bottom: 10px;">📸</div>
+                <div style="font-weight: bold; font-size: 16px; color: #0984e3;">صوّر أو ارفع صورة الدرس</div>
+                <div style="font-size: 12px; color: #b2bec3; margin-top: 5px;">يدعم JPG, PNG أو الكاميرا مباشرة</div>
+                <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
+            </div>
+
+            <button class="upload-btn-large" onclick="useDemoMode()">⚡ تجربة درس جاهز (بدون مفتاح)</button>
         </div>
+
+        <!-- 3. شاشة التحليل والتحميل -->
+        <div id="loadingScreen" class="screen">
+            <div class="loader-container">
+                <div class="spinner"></div>
+                <h3 id="loadingText">ثواني يا بطل، أنا بقرأ الدرس وهزر معاك شوية وبعدين هنلعب!</h3>
+            </div>
+        </div>
+
+        <!-- 4. شاشة الملخص والقصة قبل اللعبة -->
+        <div id="summaryScreen" class="screen">
+            <h2 id="lessonTitleDisplay">عنوان الدرس</h2>
+            <div class="summary-card" id="summaryTextDisplay">
+                جاري عرض الملخص البسيط للطفل...
+            </div>
+            <button class="sound-replay-btn" onclick="speakCurrentSummary()">🔊 اسمع الملخص تاني</button>
+            <button class="primary-btn" onclick="startGamePlay()">🚀 ابدأ مغامرة اللعب!</button>
+        </div>
+
+        <!-- 5. شاشة اللعبة الحقيقية التفاعلية -->
+        <div id="gameScreen" class="screen">
+            <div class="hud">
+                <span id="gameScore">النقاط: 0 ⭐</span>
+                <span id="gameLevel">المستوى: 1/3</span>
+            </div>
+
+            <div class="game-canvas-container" id="gameCanvasBox">
+                <!-- رسم عناصر اللعبة الديناميكية عبر JavaScript -->
+                <canvas id="gameCanvas" width="440" height="300"></canvas>
+            </div>
+
+            <div id="missionInstruction" style="font-weight: bold; font-size: 15px; color: #0984e3;">
+                مهمة البطل: اجمع العناصر الصحيحة للدرس!
+            </div>
+
+            <div class="action-controls" id="gameControls">
+                <button class="ctrl-btn" onclick="movePlayer(-1)">◀ يمين</button>
+                <button class="ctrl-btn" style="background:#e17055;" onclick="triggerAction()">⭐ تفاعل / اجمع</button>
+                <button class="ctrl-btn" onclick="movePlayer(1)">شمال ▶</button>
+            </div>
+
+            <button class="sound-replay-btn" onclick="speakGameInstruction()">🔊 اسمع التعليمات</button>
+        </div>
+
+        <!-- 6. شاشة الفوز والنهاية -->
+        <div id="congratsScreen" class="screen">
+            <h>🏆 بطل الأبطال! 🏆</h>
+            <p id="finalScoreText" style="font-size: 16px; font-weight: bold;"></p>
+            <div class="summary-card" id="learnedConceptsBox" style="text-align: center;">
+                ما تعلمناه في هذه المغامرة...
+            </div>
+            <button class="primary-btn" onclick="goHome()">🔄 العب مغامرة جديدة</button>
+        </div>
+
+        <!-- 7. وضع ولي الأمر -->
+        <div id="parentScreen" class="screen">
+            <h2>👨‍👩‍ريحة ولي الأمر والمعلم</h2>
+            <div class="summary-card" id="parentReportBox" style="text-align: right;">
+                لا توجد بيانات درس مسجلة حالياً. ارفع صورة درس للبدء في تتبع الأهداف التعليمية.
+            </div>
+            <button class="primary-btn" style="background:#0984e3;" onclick="goHome()">العودة للعبة ◀</button>
+        </div>
+
     </div>
 
     <script>
-        // الأسئلة قابلة للتعديل بحسب الدرس أو الصور التي ترفعها في أي وقت
-        const questions = [
-            {
-                q: "السؤال الأول: ما هي عاصمة جمهورية مصر العربية؟",
-                options: [
-                    "الاجابة الأولى: الإسكندرية", 
-                    "الاجابة الثانية: القاهرة", 
-                    "الاجابة الثالثة: أسوان", 
-                    "الاجابة الرابعة: الأقصر"
-                ],
-                correct: 1,
-                sound: "السؤال الأول: ما هي عاصمة جمهورية مصر العربية؟ الاختيارات: الإجابة الأولى: الإسكندرية. الإجابة الثانية: القاهرة. الإجابة الثالثة: أسوان. الإجابة الرابعة: الأقصر."
-            },
-            {
-                q: "السؤال الثاني: أي من المواد الدراסيّة التالية تهتم بدراسة الخرائط والبلدان؟",
-                options: [
-                    "الاجابة الأولى: العلوم", 
-                    "الاجابة الثانية: الرياضيات", 
-                    "الاجابة الثالثة: الدراسات الاجتماعية", 
-                    "الاجابة الرابعة: اللغة العربية"
-                ],
-                correct: 2,
-                sound: "السؤال الثاني: أي من المواد الدراسية التالية تهتم بدراسة الخرائط والبلدان؟ الاختيارات: الإجابة الأولى: العلوم. الإجابة الثانية: الرياضيات. الإجابة الثالثة: الدراسات الاجتماعية. الإجابة الرابعة: اللغة العربية."
-            }
-        ];
+        // إعدادات التطبيق والمتغيرات العامة
+        let apiKey = localStorage.getItem('gemini_api_key') || '';
+        let currentLessonData = null;
+        let gameScore = 0;
+        let currentLevel = 1;
+        let canvas, ctx;
+        let playerX = 200, targetX = 100, targetY = 150;
+        let gameInterval = null;
 
-        let currentQuestion = 0;
-        let score = 0;
+        // التبديل بين الشاشات
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
 
-        function speak(text) {
+        function openSettings() {
+            document.getElementById('apiKeyInput').value = apiKey;
+            showScreen('settingsScreen');
+        }
+
+        function goHome() {
+            showScreen('homeScreen');
+        }
+
+        function toggleParentMode() {
+            showScreen('parentScreen');
+        }
+
+        function saveApiKey() {
+            apiKey = document.getElementById('apiKeyInput').value.trim();
+            localStorage.setItem('gemini_api_key', apiKey);
+            alert('تم حفظ المفتاح بنجاح! 🔑');
+            goHome();
+        }
+
+        function removeApiKey() {
+            apiKey = '';
+            localStorage.removeItem('gemini_api_key');
+            document.getElementById('apiKeyInput').value = '';
+            alert('تم حذف المفتاح بنجاح.');
+        }
+
+        // نظام النطق الصوتي (Web Speech API)
+        function speakArabic(text, callback) {
+            if (!('speechSynthesis' in window)) return;
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'ar-SA';
-            utterance.rate = 0.90; // سرعة هادئة وواضحة للطفل
+            utterance.rate = 0.90; // صوت هادئ ومناسب للأطفال
+            if (callback) utterance.onend = callback;
             window.speechSynthesis.speak(utterance);
         }
 
-        function loadQuestion() {
-            if (currentQuestion >= questions.length) {
-                showResult();
+        // التعامل مع رفع الصورة
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!apiKey) {
+                alert('علشان أحوّل صورة الدرس للعبة بذكاء، محتاج مفتاح Gemini مجاني. يمكنك إدخاله من إعدادات (⚙️) أو استخدام تجربة الدرس الجاهز.');
+                openSettings();
                 return;
             }
 
-            const qData = questions[currentQuestion];
-            document.getElementById('questionText').innerText = qData.q;
-            
-            const optionsContainer = document.getElementById('optionsContainer');
-            optionsContainer.innerHTML = '';
+            showScreen('loadingScreen');
+            speakArabic('ثواني يا بطل، أنا بقرأ الدرس وبهزر معاك شوية وبعدين هنلعب!');
 
-            qData.options.forEach((opt, index) => {
-                const btn = document.createElement('button');
-                btn.className = 'option-btn';
-                btn.innerText = opt;
-                btn.onclick = () => checkAnswer(index, btn);
-                optionsContainer.appendChild(btn);
-            });
-
-            // قراءة السؤال كاملًا ثم الخيارات بالترتيب من واحد لأربعة
-            speak(qData.sound);
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Image = e.target.result.split(',')[1];
+                analyzeImageWithGemini(base64Image, file.type);
+            };
+            reader.readAsDataURL(file);
         }
 
-        function checkAnswer(selectedIdx, btnElement) {
-            const qData = questions[currentQuestion];
-            const allButtons = document.querySelectorAll('.option-btn');
-            
-            allButtons.forEach(b => b.disabled = true);
+        // تحليل الصورة باستخدام Gemini API
+        async function analyzeImageWithGemini(base64Data, mimeType) {
+            const prompt = `أنت مهندس تعليم ألعاب أطفال. قم بتحليل هذه الصورة التعليمية واستخرج المحتوى بدقة وأرجعه بصيغة JSON صارمة بدون أي نص إضافي كالتالي:
+            {
+              "lessonTitle": "عنوان الدرس",
+              "subject": "المادة",
+              "summary": "ملخص قصير جداً وبسيط ومناسب لطفل عمره 7 سنوات باللغة العربية البسيطة",
+              "keyFacts": ["حقيقة 1", "حقيقة 2"],
+              "game": {
+                "title": "اسم المغامرة",
+                "mission": "وصف المهمة للطفل باللهجة المصرية",
+                "targetName": "اسم العنصر المطلوب جمعه",
+                "successMessage": "كلمة تشجيعية عند الفوز"
+              }
+            }`;
 
-            if (selectedIdx === qData.correct) {
-                btnElement.classList.add('correct');
-                score += 10;
-                document.getElementById('scoreDisplay').innerText = `النقاط: ${score} ⭐`;
-                speak("برافو! إجابة صحيحة وممتازة.");
-            } else {
-                btnElement.classList.add('wrong');
-                allButtons[qData.correct].classList.add('correct');
-                speak("معليش، الإجابة الصحيحة هي: " + qData.options[qData.correct]);
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                { text: prompt },
+                                { inline_data: { mime_type: mimeType, data: base64Data } }
+                            ]
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+                const textResponse = data.candidates[0].content.parts[0].text;
+                // تنظيف الـ JSON من أي وسوم إضافية إن وجدت
+                const cleanJson = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+                currentLessonData = JSON.parse(cleanJson);
+                
+                setupLessonData();
+            } catch (error) {
+                console.error(error);
+                alert('حدث خطأ في الاتصال أو تحليل الصورة. تأكد من صحة المفتاح أو جرب وضع التجربة.');
+                goHome();
+            }
+        }
+
+        // وضع التجربة الجاهز (بدون مفتاح)
+        function useDemoMode() {
+            showScreen('loadingScreen');
+            speakArabic('ثواني يا بطل، أنا بجهز لك مغامرة الكواكب الفضائية الممتعة!');
+            
+            setTimeout(() => {
+                currentLessonData = {
+                    lessonTitle: "مغامرة مجموعة الكواكب الشمسية 🪐",
+                    subject: "العلوم",
+                    summary: "في هذه المغامرة، سنكتشف كواكب المجموعة الشمسية ونتعرف على كوكب عطارد الأقرب للشمس وكواكب الفضاء الرائعة!",
+                    keyFacts: ["عطارد هو الكوكب الأقرب للشمس", "نحن نعيش على كوكب الأرض الجميل"],
+                    game: {
+                        title: "رحلة سفينة الفضاء",
+                        mission: "حرّك السفينة واجمع كوكب عطارد الفضائي!",
+                        targetName: "كوكب عطارد",
+                        successMessage: "برافو! لقد اكتشفت أول كوكب بنجاح!"
+                    }
+                };
+                setupLessonData();
+            }, 2000);
+        }
+
+        function setupLessonData() {
+            document.getElementById('lessonTitleDisplay').innerText = currentLessonData.lessonTitle;
+            document.getElementById('summaryTextDisplay').innerText = currentLessonData.summary;
+            
+            // تحديث بيانات ولي الأمر
+            document.getElementById('parentReportBox').innerHTML = `
+                <strong>📖 الدرس:</strong> ${currentLessonData.lessonTitle}<br>
+                <strong>📚 المادة:</strong> ${currentLessonData.subject}<br>
+                <strong>🎯 الأهداف التعليمية:</strong> ${currentLessonData.keyFacts.join(' - ')}
+            `;
+
+            showScreen('summaryScreen');
+            speakArabic(currentLessonData.summary);
+        }
+
+        function speakCurrentSummary() {
+            if (currentLessonData) {
+                speakArabic(currentLessonData.summary);
+            }
+        }
+
+        // بدء اللعبة الحقيقية
+        function startGamePlay() {
+            gameScore = 0;
+            currentLevel = 1;
+            showScreen('gameScreen');
+            initGameEngine();
+            speakGameInstruction();
+        }
+
+        function speakGameInstruction() {
+            if (currentLessonData) {
+                speakArabic(currentLessonData.game.mission);
+            }
+        }
+
+        // محرك الألعاب البصري (HTML5 Canvas)
+        function initGameEngine() {
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+            
+            playerX = canvas.width / 2;
+            targetX = Math.random() * (canvas.width - 60) + 30;
+            targetY = 50;
+
+            if (gameInterval) clearInterval(gameInterval);
+            
+            gameInterval = setInterval(updateGameFrame, 30);
+        }
+
+        function movePlayer(dir) {
+            playerX += dir * 25;
+            if (playerX < 20) playerX = 20;
+            if (playerX > canvas.width - 20) playerX = canvas.width - 20;
+        }
+
+        function updateGameFrame() {
+            // تحريك الهدف ببطء للأسفل
+            targetY += 1.5;
+            if (targetY > canvas.height - 40) {
+                targetY = 40;
+                targetX = Math.random() * (canvas.width - 60) + 30;
             }
 
-            currentQuestion++;
-            setTimeout(loadQuestion, 3000);
+            // رسم الشاشة
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // رسم الخلفية النجومية
+            ctx.fillStyle = '#1e272e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // رسم العنصر المطلوب جمعه (أيقونة كوكب أو عنصر الدرس)
+            ctx.beginPath();
+            ctx.arc(targetX, targetY, 22, 0, Math.PI * 2);
+            ctx.fillStyle = '#feca57';
+            ctx.fill();
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#ff9f43';
+            ctx.stroke();
+            ctx.closePath();
+
+            ctx.fillStyle = '#2d3436';
+            ctx.font = '12px Cairo';
+            ctx.textAlign = 'center';
+            ctx.fillText('⭐ هدف', targetX, targetY + 4);
+
+            // رسم سفينة البطل
+            ctx.beginPath();
+            ctx.arc(playerX, canvas.height - 35, 20, 0, Math.PI * 2);
+            ctx.fillStyle = '#ff6b6b';
+            ctx.fill();
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#ee5253';
+            ctx.stroke();
+            ctx.closePath();
+
+            ctx.fillStyle = 'white';
+            ctx.font = '14px Cairo';
+            ctx.fillText('🚀', playerX, canvas.height - 30);
         }
 
-        function showResult() {
-            document.getElementById('gameScreen').style.display = 'none';
-            document.getElementById('resultScreen').style.display = 'block';
-            document.getElementById('finalMessage').innerText = `أنهيت التحدي بنجاح! مجموع نقاطك: ${score} نقطة. ممتاز جداً! 🎉`;
-            speak(`أنهيت التحدي بنجاح! مجموع نقاطك هو ${score} نقطة. برافو عليك!`);
+        function triggerAction() {
+            // التحقق من اصطياد العنصر
+            const distance = Math.abs(playerX - targetX);
+            if (distance < 35) {
+                gameScore += 20;
+                document.getElementById('gameScore').innerText = `النقاط: ${gameScore} ⭐`;
+                speakArabic(currentLessonData.game.successMessage);
+
+                // إعادة تمركز الهدف
+                targetY = 40;
+                targetX = Math.random() * (canvas.width - 60) + 30;
+
+                currentLevel++;
+                if (currentLevel > 3) {
+                    clearInterval(gameInterval);
+                    showCongratsScreen();
+                } else {
+                    document.getElementById('gameLevel').innerText = `المستوى: ${currentLevel}/3`;
+                }
+            } else {
+                speakArabic("قرب كمان يا بطل!");
+            }
         }
 
-        function restartGame() {
-            currentQuestion = 0;
-            score = 0;
-            document.getElementById('scoreDisplay').innerText = `النقاط: 0 ⭐`;
-            document.getElementById('resultScreen').style.display = 'none';
-            document.getElementById('gameScreen').style.display = 'block';
-            loadQuestion();
+        function showCongratsScreen() {
+            showScreen('congratsScreen');
+            document.getElementById('finalScoreText').innerText = `مجموع نقاطك البطولية: ${gameScore} نقطة! 🎉`;
+            document.getElementById('learnedConceptsBox').innerHTML = `
+                <strong>📚 ما تعلمناه اليوم:</strong><br>
+                ${currentLessonData.keyFacts.join('<br>')}
+            `;
+            speakArabic(`أنهيت المغامرة بنجاح يا بطل! ومجموع نقاطك هو ${gameScore} نقطة.`);
         }
-
-        window.onload = () => {
-            setTimeout(loadQuestion, 1000);
-        };
     </script>
-
 </body>
 </html>
