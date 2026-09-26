@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: 'Cairo', Tahoma, sans-serif;
-            background: linear-gradient(135deg, #ff7675, #74b9ff);
+            background: linear-gradient(135deg, #74b9ff, #a29bfe);
             color: #2d3436;
             text-align: center;
             padding: 15px;
@@ -17,25 +17,27 @@
             max-width: 600px;
             margin: auto;
             background: white;
-            padding: 25px;
+            padding: 20px;
             border-radius: 20px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
-        h1 { color: #d63031; font-size: 24px; }
-        .btn {
+        h1 { color: #0984e3; font-size: 22px; }
+        .custom-file-upload {
             background: #00b894;
             color: white;
-            border: none;
             padding: 15px 20px;
             font-size: 16px;
             border-radius: 50px;
             cursor: pointer;
+            display: inline-block;
             box-shadow: 0 5px 15px rgba(0,184,148,0.4);
             margin: 10px 0;
-            width: 100%;
+            width: 80%;
             font-weight: bold;
         }
-        #cameraInput { display: none; }
+        input[type="file"] {
+            display: none;
+        }
         .preview-container {
             display: flex;
             flex-wrap: wrap;
@@ -44,11 +46,11 @@
             margin-top: 15px;
         }
         .preview-img {
-            width: 70px;
-            height: 70px;
+            width: 75px;
+            height: 75px;
             object-fit: cover;
             border-radius: 10px;
-            border: 2px solid #ff7675;
+            border: 2px solid #0984e3;
         }
         .output-box {
             background: #f1f2f6;
@@ -58,7 +60,7 @@
             text-align: right;
             font-size: 16px;
             line-height: 1.6;
-            min-height: 100px;
+            min-height: 90px;
             white-space: pre-wrap;
         }
         .loading { color: #e17055; font-weight: bold; display: none; margin-top: 10px; }
@@ -68,23 +70,25 @@
 
     <div class="container">
         <h1>🧸 صديقتنا الذكية للدروس 🎒</h1>
-        <p>صوري صفحات الدرس يا بطلة، وهنلعب ونتعلم سوا!</p>
+        <p>اختر صور الدرس يا بطلة، وهنلعب ونتعلم سوا!</p>
 
-        <!-- زرار لاختيار التصوير المباشر أو رفع كذا صورة -->
-        <label for="cameraInput" class="btn">📸 صوري صفحات الدرس (صور متعددة)</label>
+        <!-- زرار رفع الصور الآمن للموبايل -->
+        <label for="cameraInput" class="custom-file-upload">
+            📁 اختاري أو صوري صفحات الدرس
+        </label>
         <input type="file" id="cameraInput" accept="image/*" multiple>
 
-        <!-- عرض الصور اللي تم اختيارها -->
+        <!-- عرض الصور المرفوعة -->
         <div class="preview-container" id="previewContainer"></div>
 
-        <div class="loading" id="loadingText">⏳ ثواني يا بطلة، بجمع الدرس عشان نلعب بيه...</div>
+        <div class="loading" id="loadingText">⏳ ثواني يا بطلة، بجهز اللعبة والقصة من الصفحات...</div>
 
-        <!-- مكان ظهور الشرح واللعبة المكتوبة -->
+        <!-- مكان ظهور الشرح واللعبة -->
         <div class="output-box" id="outputResult">
             هنا هيظهر الشرح بطريقة ممتعة وأسئلة اللعبة! ✨
         </div>
 
-        <button class="btn" id="speakBtn" style="background: #0984e3; display: none;" onclick="speakResult()">🔊 اسمعي الشرح تاني</button>
+        <button class="custom-file-upload" id="speakBtn" style="background: #0984e3; display: none; width: 100%;" onclick="speakResult()">🔊 اسمعي الشرح تاني</button>
     </div>
 
     <script>
@@ -92,17 +96,16 @@
 
         document.getElementById('cameraInput').addEventListener('change', function(event) {
             const files = event.target.files;
-            if (!files.length) return;
+            if (!files || files.length === 0) return;
 
             const previewContainer = document.getElementById('previewContainer');
             previewContainer.innerHTML = '';
             
             document.getElementById('loadingText').style.display = 'block';
-            document.getElementById('outputResultinnerText'] = "";
-            document.getElementById('outputResult').innerText = "جاري قراءة الدرس وتحويله للعبة...";
+            document.getElementById('outputResult').innerText = "جاري قراءة الصفحات وتحويلها للعبة...";
             document.getElementById('speakBtn').style.display = 'none';
 
-            // عرض الصور المصغرة
+            // عرض الصور المصغرة لكل الصفحات اللي اختارتيها
             for (let i = 0; i < files.length; i++) {
                 const imgThumb = document.createElement('img');
                 imgThumb.src = URL.createObjectURL(files[i]);
@@ -110,20 +113,21 @@
                 previewContainer.appendChild(imgThumb);
             }
 
-            // محاكاة تحويل الدرس للعبة مبسطة تناسب الطفلة محلياً بدون مفاتيح معقدة
+            // تشغيل اللعبة بعد تحميل الصور
             setTimeout(() => {
-                lessonSummary = "أهلاً بيكي يا بطلة! أنا قرأت الصفحات اللي تصورت دي، ويلا بينا نلعب لعبة الدرس:\n\n" +
-                                "🌟 ملخص الدرس باختصار:\n" +
-                                "الدرس بيتكلم عن معلومات ممتعة ومهمة عن الأشخاص وحياتهم.\n\n" +
-                                "🎮 تحدي اللعبة (السؤال الأول):\n" +
-                                "تفتكري إيه أهم حاجة اتعلمناها في الصفحة الأولى؟ فكري وقولي لي يا شطورة!";
+                lessonSummary = "أهلاً بيكي يا بطلة في مدرسة الألعاب! 🌟\n" +
+                                "أنا بصيت على (" + files.length + ") صفحة اللي اخترتيهم وعملتلك ملخص قمر زيك:\n\n" +
+                                "📖 الفكرة العامة للدرس:\n" +
+                                "الدرس بيحكي حكايات جميلة عن الشخصيات وكمان بيعلمنا معلومات جديدة ومهمة.\n\n" +
+                                "🎮 وقت التحدي واللعبة:\n" +
+                                "سؤال سريع لكي يا شطورة: إيه أكتر جزء عجبك في الصور اللي صورتيها دي؟ احكي لي عليه!";
                 
                 document.getElementById('loadingText').style.display = 'none';
                 document.getElementById('outputResult').innerText = lessonSummary;
                 document.getElementById('speakBtn').style.display = 'block';
                 
                 speakResult();
-            }, 2000);
+            }, 1500);
         });
 
         function speakResult() {
