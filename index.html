@@ -3,172 +3,205 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لعبة الدروس الذكية 🎮</title>
+    <title>لعبة بطلة الدرس 🎮✨</title>
     <style>
         body {
             font-family: 'Cairo', Tahoma, sans-serif;
-            background: linear-gradient(135deg, #0984e3, #6c5ce7);
+            background: linear-gradient(135deg, #ff9ff3, #feca57);
             color: #2d3436;
             text-align: center;
             padding: 15px;
             margin: 0;
         }
         .container {
-            max-width: 600px;
+            max-width: 500px;
             margin: auto;
             background: white;
-            padding: 20px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            padding: 25px;
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
         }
-        h1 { color: #d63031; font-size: 22px; }
-        .custom-file-upload {
-            background: #00b894;
+        h1 { color: #ff6b6b; font-size: 24px; margin-bottom: 5px; }
+        .score-box {
+            background: #54a0ff;
             color: white;
-            padding: 15px 20px;
-            font-size: 16px;
-            border-radius: 50px;
-            cursor: pointer;
+            padding: 8px 15px;
+            border-radius: 20px;
             display: inline-block;
-            box-shadow: 0 5px 15px rgba(0,184,148,0.4);
-            margin: 10px 0;
-            width: 85%;
             font-weight: bold;
+            margin-bottom: 15px;
         }
-        input[type="file"] { display: none; }
-        .preview-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 15px;
-        }
-        .preview-img {
-            width: 75px;
-            height: 75px;
-            object-fit: cover;
-            border-radius: 10px;
-            border: 2px solid #0984e3;
-        }
-        .output-box {
+        .question-box {
             background: #f1f2f6;
-            padding: 15px;
-            border-radius: 12px;
-            margin-top: 20px;
-            text-align: right;
-            font-size: 15px;
-            line-height: 1.6;
-            min-height: 120px;
-            white-space: pre-wrap;
+            padding: 18px;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #2c3e50;
         }
-        .loading { color: #e17055; font-weight: bold; display: none; margin-top: 10px; }
-        .btn-action {
-            background: #e17055;
+        .option-btn {
+            background: #00d2d3;
             color: white;
             border: none;
-            padding: 12px 20px;
-            font-size: 15px;
-            border-radius: 30px;
+            padding: 14px;
+            font-size: 16px;
+            border-radius: 15px;
             cursor: pointer;
-            margin-top: 10px;
             width: 100%;
+            margin-bottom: 10px;
             font-weight: bold;
-            display: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: 0.2s;
+        }
+        .option-btn:active { transform: scale(0.97); }
+        .option-btn.correct { background: #2ed573 !important; }
+        .option-btn.wrong { background: #ff4757 !important; }
+        .result-screen { display: none; }
+        .restart-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 15px;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>🌟 مدرسة الألعاب الذكية للدروس 🎒</h1>
-        <p>صوري صفحات الدرس، وهحولها لك فوراً لقصة ولعبة أسئلة ممتعة!</p>
+        <h1>🎮 تحدي درس "من أنا؟" 🌟</h1>
+        <div class="score-box" id="scoreDisplay">النقاط: 0 ⭐</div>
 
-        <label for="cameraInput" class="custom-file-upload">
-            📸 صوري أو اختاري صفحات الدرس
-        </label>
-        <input type="file" id="cameraInput" accept="image/*" multiple>
-
-        <div class="preview-container" id="previewContainer"></div>
-
-        <div class="loading" id="loadingText">⏳ ثواني يا بطلة، بقرأ الدرس وبصنع اللعبة...</div>
-
-        <div class="output-box" id="outputResult">
-            هنا هيظهر شرح الدرس واللعبة الحقيقية بناءً على الصور اللي صورتيها! ✨
+        <!-- شاشة اللعبة -->
+        <div id="gameScreen">
+            <div class="question-box" id="questionText">جاري تحميل السؤال...</div>
+            <div id="optionsContainer"></div>
         </div>
 
-        <button class="btn-action" id="speakBtn" onclick="speakResult()">🔊 اسمعي الشرح واللعبة صوتياً</button>
+        <!-- شاشة النهاية (الفوز) -->
+        <div class="result-screen" id="resultScreen">
+            <h2>🏆 بطلة عظيمة! 🏆</h2>
+            <p id="finalMessage" style="font-size: 18px; font-weight: bold;"></p>
+            <button class="restart-btn" onclick="restartGame()">العب تاني 🔄</button>
+        </div>
     </div>
 
     <script>
-        let gameTextContent = "";
-
-        document.getElementById('cameraInput').addEventListener('change', async function(event) {
-            const files = event.target.files;
-            if (!files || files.length === 0) return;
-
-            const previewContainer = document.getElementById('previewContainer');
-            previewContainer.innerHTML = '';
-            
-            document.getElementById('loadingText').style.display = 'block';
-            document.getElementById('outputResult').innerText = "جاري تحليل الصور واستخراج الأسئلة واللعبة...";
-            document.getElementById('speakBtn').style.display = 'none';
-
-            let base64Images = [];
-
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                
-                // عرض الصورة المصغرة
-                const imgThumb = document.createElement('img');
-                imgThumb.src = URL.createObjectURL(file);
-                imgThumb.className = 'preview-img';
-                previewContainer.appendChild(imgThumb);
-
-                // تحويل لـ Base64
-                const base64 = await toBase64(file);
-                base64Images.push(base64);
+        // الأسئلة مبنية بالظبط من صفحات الدرس والتدريبات اللي صورتها (آبلة فضيلة ومعاني الكلمات)
+        const questions = [
+            {
+                q: "في درس (من أنا؟)، من هي الشخصية الإذاعية الشهيرة التي تحكي الحكايات للأطفال؟",
+                options: ["آبلة فضيلة", "أبلة ميرفت", "عزة ودور"],
+                correct: 0,
+                sound: "مين الشخصية الإذاعية الشهيرة في الدرس؟ هل هي آبلة فضيلة؟"
+            },
+            {
+                q: "ما معنى كلمة (شهير) في جملة: (دكتور أحمد زويل شهير بأبحاثه)؟",
+                options: ["فقير", "معروف", "صغير"],
+                correct: 1,
+                sound: "ما معنى كلمة شهير؟"
+            },
+            {
+                q: "ما هو حلم (آبلة فضيلة) الحقيقي بعد أن التحقت بكلية الحقوق؟",
+                options: ["أن تكون طبيبة", "أن تكون مهندسة", "أن تكون مذيعة في الإذاعة المصرية"],
+                correct: 2,
+                sound: "إيه كان حلم آبلة فضيلة الحقيقي؟"
+            },
+            {
+                q: "ما معنى كلمة (أواجه) في جملة: (أواجه المشكلات بإرادة قوية)؟",
+                options: ["أقابل", "أهرب من", "أترك"],
+                correct: 0,
+                sound: "ما معنى كلمة أواجه؟"
+            },
+            {
+                q: "من خلال التدريبات، ما هي كلمة مرادفها (الإشارات)؟",
+                options: ["القصص", "التلميحات", "الحكايات"],
+                correct: 1,
+                sound: "ما هي الكلمة التي مرادفها الإشارات؟"
             }
+        ];
 
-            // توليد اللعبة بناءً على محتوى الصور الحقيقي (مدمج ذكياً محلياً بدون مفاتيح خارجية معقدة)
-            generateSmartGame(base64Images);
-        });
+        let currentQuestion = 0;
+        let score = 0;
 
-        function toBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result.split(',')[1]);
-                reader.onerror = error => reject(error);
-            });
-        }
-
-        function generateSmartGame(images) {
-            // تحليل محتوى الصور واستخراج تفاصيل الدرس الحقيقي لعمل لعبة تفاعلية
-            setTimeout(() => {
-                gameTextContent = "أهلاً بيكي يا بطلة في تحدي الدرس الجميل! 🎮✨\n\n" +
-                                  "📖 ملخص الدرس من الصفحات اللي صورتيها:\n" +
-                                  "الدرس بيناقش قصة ممتعة عن الشخصيات (زي قصة من أنا؟) وأسئلة تفاعلية عن المعلومات الشخصية والعامة.\n\n" +
-                                  "🎯 لعبة التحدي والأسئلة:\n" +
-                                  "1️⃣ السؤال الأول: إيه هي الشخصية أو الحاجة الرئيسية اللي بيدور حولها الدرس في الصور؟\n" +
-                                  "2️⃣ السؤال الثاني: فكري في المعلومة اللي ذكروها في أول صفحة وجاوبي عليها بصوت عالي!\n\n" +
-                                  "يلا يا شطورة وريني شطارتك وحلي الأسئلة دي!";
-
-                document.getElementById('loadingText').style.display = 'none';
-                document.getElementById('outputResult').innerText = gameTextContent;
-                document.getElementById('speakBtn').style.display = 'block';
-                
-                speakResult();
-            }, 2000);
-        }
-
-        function speakResult() {
-            if (!gameTextContent) return;
+        function speak(text) {
             window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(gameTextContent);
+            const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'ar-SA';
-            utterance.rate = 0.9;
+            utterance.rate = 0.95;
             window.speechSynthesis.speak(utterance);
         }
+
+        function loadQuestion() {
+            if (currentQuestion >= questions.length) {
+                showResult();
+                return;
+            }
+
+            const qData = questions[currentQuestion];
+            document.getElementById('questionText').innerText = `السؤال (${currentQuestion + 1} من ${questions.length}):\n` + qData.q;
+            
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+
+            qData.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+
+            speak(qData.sound);
+        }
+
+        function checkAnswer(selectedIdx, btnElement) {
+            const qData = questions[currentQuestion];
+            const allButtons = document.querySelectorAll('.option-btn');
+            
+            // قفل الأزرار عشان ميتدش كذا مرة
+            allButtons.forEach(b => b.disabled = true);
+
+            if (selectedIdx === qData.correct) {
+                btnElement.classList.add('correct');
+                score += 10;
+                document.getElementById('scoreDisplay').innerText = `النقاط: ${score} ⭐`;
+                speak("برافو عليكِ يا بطلة، إجابة صحيحة وممتازة!");
+            } else {
+                btnElement.classList.add('wrong');
+                allButtons[qData.correct].classList.add('correct');
+                speak("معليش يا شطورة، الإجابة الصحيحة هي دي.");
+            }
+
+            currentQuestion++;
+            setTimeout(loadQuestion, 2000); // الانتقال للسؤال التالي بعد ثانيتين
+        }
+
+        function showResult() {
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById('resultScreen').style.display = 'block';
+            document.getElementById('finalMessage').innerText = `خلصتِ اللعبة يا بطلة! وجبتِ ${score} نقطة من 50. شطورة خالص! 🎉`;
+            speak(`خلصتِ اللعبة يا بطلة! جبتِ ${score} نقطة. برافو عليكِ!`);
+        }
+
+        function restartGame() {
+            currentQuestion = 0;
+            score = 0;
+            document.getElementById('scoreDisplay').innerText = `النقاط: 0 ⭐`;
+            document.getElementById('resultScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+            loadQuestion();
+        }
+
+        // بدء اللعبة أول ما الصفحة تفتح
+        window.onload = () => {
+            setTimeout(loadQuestion, 1000);
+        };
     </script>
 
 </body>
